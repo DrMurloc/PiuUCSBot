@@ -5,6 +5,12 @@ VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UCSBot", "UCSBot\UCSBot.csproj", "{30A07077-A3EF-4441-A232-22247F09CD13}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Presentation", "Presentation", "{26748B92-F572-47DB-A711-F85AF33AEC15}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Infrastructure", "Infrastructure", "{8A453708-0CB6-460D-9502-59135D0187AD}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UCSBot.Infrastructure", "UCSBot.Infrastructure\UCSBot.Infrastructure.csproj", "{D7C3BF0B-42D6-4DF7-A404-4F82ECC164BA}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,9 +21,17 @@ Global
 		{30A07077-A3EF-4441-A232-22247F09CD13}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{30A07077-A3EF-4441-A232-22247F09CD13}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{30A07077-A3EF-4441-A232-22247F09CD13}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D7C3BF0B-42D6-4DF7-A404-4F82ECC164BA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D7C3BF0B-42D6-4DF7-A404-4F82ECC164BA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D7C3BF0B-42D6-4DF7-A404-4F82ECC164BA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D7C3BF0B-42D6-4DF7-A404-4F82ECC164BA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{30A07077-A3EF-4441-A232-22247F09CD13} = {26748B92-F572-47DB-A711-F85AF33AEC15}
+		{D7C3BF0B-42D6-4DF7-A404-4F82ECC164BA} = {8A453708-0CB6-460D-9502-59135D0187AD}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {DEE920D5-74BB-4D60-A83C-9AC2A04DDDAB}
