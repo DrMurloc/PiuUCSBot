@@ -309,3 +309,7 @@ UCSBot/UCSBot/obj/project.assets.json
 UCSBot/UCSBot/obj/project.nuget.cache
 
 UCSBot/UCSBot/obj/UCSBot.csproj.nuget.dgspec.json
+
+UCSBot/UCSBot/Properties/PublishProfiles/ucsbot - Web Deploy.pubxml
+
+UCSBot/UCSBot/Properties/ServiceDependencies/ucsbot - Web Deploy/profile.arm.json
