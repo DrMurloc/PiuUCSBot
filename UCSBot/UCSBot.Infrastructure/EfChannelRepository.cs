@@ -24,7 +24,7 @@ public sealed class EfChannelRepository : IChannelRepository
 
     public async Task SaveChannel(Channel channel, CancellationToken cancellationToken = default)
     {
-        var entity = _database.Channel.FirstOrDefault(c => c.ChannelId == channel.Id);
+        var entity = await _database.Channel.FirstOrDefaultAsync(c => c.ChannelId == channel.Id, cancellationToken);
         if (entity == null)
         {
             entity = new ChannelEntity
@@ -42,5 +42,15 @@ public sealed class EfChannelRepository : IChannelRepository
         }
 
         await _database.SaveChangesAsync(cancellationToken);
+    }
+
+    public async Task<IEnumerable<Channel>> GetChannelsSubscribedToFeed(Feed feed,
+        CancellationToken cancellationToken = default)
+    {
+        var feedString = feed.ToString();
+        return (await _database.Channel.ToArrayAsync(cancellationToken))
+            .Where(c => c.FeedNames.Contains(feedString))
+            .Select(c => new Channel(c.ChannelId, c.FeedNames.Select(Enum.Parse<Feed>)))
+            .ToArray();
     }
 }
