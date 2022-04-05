@@ -85,10 +85,17 @@ public sealed class DiscordBotClient : IBotClient
             _client.SlashCommandExecuted += async command =>
             {
                 if (command.CommandName == name)
-                {
-                    var response = await execution(command.Channel.Id);
-                    await command.RespondAsync(response);
-                }
+                    try
+                    {
+                        var response = await execution(command.Channel.Id);
+                        await command.RespondAsync(response);
+                    }
+                    catch (Exception e)
+                    {
+                        _logger.LogError(
+                            $"An exception while executing the command for {command.CommandName}: {e.Message} {e.StackTrace}",
+                            e);
+                    }
             };
         }
         catch (Exception e)
