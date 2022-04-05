@@ -2,8 +2,8 @@
 using Discord.WebSocket;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using UCSBot.Domain.Contracts;
 using UCSBot.Infrastructure.Configuration;
-using UCSBot.Infrastructure.Contracts;
 
 namespace UCSBot.Infrastructure;
 
@@ -73,7 +73,7 @@ public sealed class DiscordBotClient : IBotClient
         }
     }
 
-    public async Task RegisterSlashCommand(string name, string description, Func<Task<string>> execution)
+    public async Task RegisterSlashCommand(string name, string description, Func<ulong, Task<string>> execution)
     {
         if (_client == null) throw new Exception("Discord client was not started");
         var builder = new SlashCommandBuilder()
@@ -86,7 +86,7 @@ public sealed class DiscordBotClient : IBotClient
             {
                 if (command.CommandName == name)
                 {
-                    var response = await execution();
+                    var response = await execution(command.Channel.Id);
                     await command.RespondAsync(response);
                 }
             };

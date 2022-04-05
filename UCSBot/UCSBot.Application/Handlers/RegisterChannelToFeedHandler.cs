@@ -1,6 +1,4 @@
-﻿using System.ComponentModel;
-using System.Reflection;
-using MediatR;
+﻿using MediatR;
 using UCSBot.Application.Commands;
 using UCSBot.Domain.Contracts;
 using UCSBot.Domain.Enums;
@@ -22,15 +20,22 @@ public sealed class RegisterChannelToFeedHandler : IRequestHandler<RegisterChann
 
     public async Task<Unit> Handle(RegisterChannelToFeedCommand request, CancellationToken cancellationToken)
     {
+        var feedDescription = request.Feed.GetDescription();
+
         var channel = await _channelRepository.GetChannel(request.ChannelId, cancellationToken) ??
                       new Channel(request.ChannelId, Array.Empty<Feed>());
+
+        if (channel.Feeds.Contains(request.Feed))
+        {
+            await _botClient.SendMessages(
+                new[] { $"This channel already is registered to receive the {feedDescription}" }, new[] { channel.Id },
+                cancellationToken);
+            return Unit.Value;
+        }
 
         channel.AddFeed(request.Feed);
 
         await _channelRepository.SaveChannel(channel, cancellationToken);
-
-        var feedDescription = request.Feed.GetType().GetCustomAttribute<DescriptionAttribute>()?.Description ??
-                              "Unknown Feed";
 
         await _botClient.SendMessages(
             new[] { $"This channel has been registered to receive the {feedDescription}!" }, new[] { channel.Id },

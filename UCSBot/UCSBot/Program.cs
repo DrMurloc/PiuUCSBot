@@ -1,7 +1,9 @@
+using MediatR;
+using UCSBot.Application.Handlers;
+using UCSBot.Domain.Contracts;
 using UCSBot.HostedServices;
 using UCSBot.Infrastructure;
 using UCSBot.Infrastructure.Configuration;
-using UCSBot.Infrastructure.Contracts;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,6 +13,8 @@ var discordConfig = builder.Configuration.GetSection("Discord").Get<DiscordConfi
 
 builder.Services.AddSingleton<IBotClient, DiscordBotClient>()
     .AddHostedService<BotHostedService>()
+    .AddMediatR(typeof(RegisterChannelToFeedHandler))
+    .AddSingleton<IChannelRepository, InMemoryChannelRepository>()
     .Configure<DiscordConfiguration>(o => { o.BotToken = discordConfig.BotToken; });
 
 var app = builder.Build();
