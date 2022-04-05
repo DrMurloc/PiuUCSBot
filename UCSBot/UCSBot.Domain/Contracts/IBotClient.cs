@@ -1,4 +1,4 @@
-﻿namespace UCSBot.Infrastructure.Contracts;
+﻿namespace UCSBot.Domain.Contracts;
 
 public interface IBotClient : IDisposable
 {
@@ -7,4 +7,7 @@ public interface IBotClient : IDisposable
 
     public Task SendMessages(IEnumerable<string> messages, IEnumerable<ulong> channelIds,
         CancellationToken cancellationToken = default);
+
+    public Task RegisterSlashCommand(string name, string description, Func<Task<string>> execution);
+    public void WhenReady(Func<Task> execution);
 }

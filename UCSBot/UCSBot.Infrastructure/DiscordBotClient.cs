@@ -9,9 +9,9 @@ namespace UCSBot.Infrastructure;
 
 public sealed class DiscordBotClient : IBotClient
 {
+    private readonly DiscordConfiguration _configuration;
     private readonly ILogger _logger;
     private DiscordSocketClient? _client;
-    private readonly DiscordConfiguration _configuration;
 
     public DiscordBotClient(ILogger<DiscordBotClient> logger, IOptions<DiscordConfiguration> options)
     {
@@ -71,5 +71,35 @@ public sealed class DiscordBotClient : IBotClient
                     _logger.LogWarning($"Could not send message to channel {channelId}. Message :{message}", ex);
                 }
         }
+    }
+
+    public async Task RegisterSlashCommand(string name, string description, Func<Task<string>> execution)
+    {
+        if (_client == null) throw new Exception("Discord client was not started");
+        var builder = new SlashCommandBuilder()
+            .WithName(name)
+            .WithDescription(description);
+        try
+        {
+            await _client.CreateGlobalApplicationCommandAsync(builder.Build());
+            _client.SlashCommandExecuted += async command =>
+            {
+                if (command.CommandName == name)
+                {
+                    var response = await execution();
+                    await command.RespondAsync(response);
+                }
+            };
+        }
+        catch (Exception e)
+        {
+            _logger.LogError($"Error when registering the slash command {name}", e);
+        }
+    }
+
+    public void WhenReady(Func<Task> execution)
+    {
+        if (_client == null) throw new Exception("Client was not started");
+        _client.Ready += execution;
     }
 }

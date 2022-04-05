@@ -17,6 +17,14 @@ public sealed class BotHostedService : IHostedService
     public async Task StartAsync(CancellationToken cancellationToken)
     {
         await _botClient.Start(cancellationToken);
+        _botClient.WhenReady(async () =>
+        {
+            await _botClient.RegisterSlashCommand("start-ucs-feed", "Registers the current channel for UCS feeds", () =>
+            {
+                _logger.LogInformation("Slash command used");
+                return Task.FromResult("Channel Registered to receive UCS feed!");
+            });
+        });
         _logger.LogInformation("Started bot client");
     }
 
