@@ -38,7 +38,10 @@ public sealed class EfChannelRepository : IChannelRepository
         else
         {
             entity.FeedNames = channel.Feeds.Select(f => f.ToString()).ToArray();
-            _database.Update(entity);
+            if (!entity.FeedNames.Any())
+                _database.Remove(entity);
+            else
+                _database.Update(entity);
         }
 
         await _database.SaveChangesAsync(cancellationToken);

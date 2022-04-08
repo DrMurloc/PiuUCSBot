@@ -40,6 +40,19 @@ public sealed class BotHostedService : IHostedService
 
                     return "Attempting to register channel to receive UCS Feed...";
                 });
+
+            await _botClient.RegisterSlashCommand("stop-ucs-feed", "UnRegisters the current channel from the UCS feed",
+                async channelId =>
+                {
+                    _logger.LogInformation($"stop-ucs-feed command used from channel {channelId}");
+                    using var scope = _serviceCollection.CreateScope();
+
+                    var token = new CancellationToken();
+                    await scope.ServiceProvider.GetRequiredService<IMediator>()
+                        .Send(new UnRegisterChannelFromFeedCommand(channelId, Feed.Ucs), token);
+
+                    return "Attempting to un-register channel from the UCS Feed...";
+                });
         });
         _logger.LogInformation("Started bot client");
     }
