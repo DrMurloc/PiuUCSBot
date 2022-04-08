@@ -19,4 +19,11 @@ public sealed class Channel
             return;
         Feeds.Add(feed);
     }
+
+    public void RemoveFeed(Feed feed)
+    {
+        if (!Feeds.Contains(feed))
+            return;
+        Feeds.Remove(feed);
+    }
 }
