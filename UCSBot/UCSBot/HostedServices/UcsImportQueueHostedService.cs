@@ -63,7 +63,9 @@ public sealed class UcsImportQueueHostedService : IHostedService
                         c.QuadCount,
                         c.QuintPlusCount,
                         c.SpeedChangeCount,
-                        c.LargestSpeedChange))), cancellation);
+                        c.LargestSpeedChange,
+                        c.IsHalfDouble,
+                        c.IsQuarterDouble))), cancellation);
             }
             catch (Exception ex)
             {
