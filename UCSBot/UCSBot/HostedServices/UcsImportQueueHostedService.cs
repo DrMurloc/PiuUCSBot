@@ -55,7 +55,7 @@ public sealed class UcsImportQueueHostedService : IHostedService
                         c.StepArtistName,
                         c.ChartType,
                         c.DifficultyLevel,
-                        c.CreationDate,
+                        DateOnly.FromDateTime(c.CreationDate),
                         c.StepCount,
                         c.HoldCount,
                         c.JumpCount,

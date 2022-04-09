@@ -7,7 +7,7 @@ public sealed class UcsChartImportedDto
     public string StepArtistName { get; set; }
     public string ChartType { get; set; }
     public int DifficultyLevel { get; set; }
-    public DateOnly CreationDate { get; set; }
+    public DateTime CreationDate { get; set; }
     public int StepCount { get; set; }
     public int HoldCount { get; set; }
     public int JumpCount { get; set; }
