@@ -29,7 +29,7 @@ public sealed class UcsImportQueueHostedService : IHostedService
     public async Task StartAsync(CancellationToken cancellationToken)
     {
         _client = new ServiceBusClient(_config.ConnectionString);
-        _proccessor = _client.CreateProcessor("ucs-imported");
+        _proccessor = _client.CreateProcessor(_config.QueueName);
         _proccessor.ProcessErrorAsync += e =>
         {
             _logger.LogError($"Error processing message {e.Exception.Message} {e.Exception.StackTrace}", e);

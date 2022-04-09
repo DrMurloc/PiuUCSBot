@@ -9,10 +9,10 @@ public sealed class UcsBotDbContext : DbContext
 {
     private readonly CosmosConfiguration _config;
 
-    public UcsBotDbContext(DbContextOptions<UcsBotDbContext> options, IOptions<CosmosConfiguration> options) :
+    public UcsBotDbContext(DbContextOptions<UcsBotDbContext> options, IOptions<CosmosConfiguration> configOptions) :
         base(options)
     {
-        _config = options.Value;
+        _config = configOptions.Value;
     }
 
     public DbSet<ChannelEntity> Channel { get; set; }
