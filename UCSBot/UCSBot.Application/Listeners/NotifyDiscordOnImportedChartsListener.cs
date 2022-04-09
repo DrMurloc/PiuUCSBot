@@ -38,6 +38,16 @@ public sealed class NotifyDiscordOnImportedChartsListener : INotificationHandler
         var result = $@"Chart: {chart.SongName} {chart.ChartType} {chart.DifficultyLevel}
 Artist: {chart.StepArtistName}
 Created on: {chart.CreationDate}";
+        if (chart.IsHalfDouble)
+        {
+            if (chart.IsQuarterDouble)
+                result += @"
+Quarter Double";
+            else
+                result += @"
+Half Double";
+        }
+
         result += $@"
 {chart.StepCount} Steps, {chart.HoldCount} Holds, {chart.JumpCount} Jumps";
         if (chart.TripleCount > 0 || chart.QuadCount > 0 || chart.QuintPlusCount > 0)

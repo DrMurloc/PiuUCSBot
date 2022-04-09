@@ -14,7 +14,9 @@ public sealed class Chart
         int quadCount,
         int quintPlusCount,
         int speedChangeCount,
-        double largestSpeedChange)
+        double largestSpeedChange,
+        bool isHalfDouble,
+        bool isQuarterDouble)
     {
         ChartId = chartId;
         SongName = songName;
@@ -30,6 +32,8 @@ public sealed class Chart
         QuintPlusCount = quintPlusCount;
         SpeedChangeCount = speedChangeCount;
         LargestSpeedChange = largestSpeedChange;
+        IsHalfDouble = isHalfDouble;
+        IsQuarterDouble = isQuarterDouble;
     }
 
     public int ChartId { get; set; }
@@ -46,4 +50,6 @@ public sealed class Chart
     public int QuintPlusCount { get; set; }
     public int SpeedChangeCount { get; set; }
     public double LargestSpeedChange { get; set; }
+    public bool IsHalfDouble { get; set; }
+    public bool IsQuarterDouble { get; set; }
 }

@@ -16,4 +16,6 @@ public sealed class UcsChartImportedDto
     public int QuintPlusCount { get; set; }
     public int SpeedChangeCount { get; set; }
     public double LargestSpeedChange { get; set; }
+    public bool IsHalfDouble { get; set; }
+    public bool IsQuarterDouble { get; set; }
 }
