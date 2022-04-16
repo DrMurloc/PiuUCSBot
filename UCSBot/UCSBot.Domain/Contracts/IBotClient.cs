@@ -19,6 +19,9 @@ public interface IBotClient : IDisposable
     public Task SendMessages(IEnumerable<string> messages, IEnumerable<ulong> channelIds,
         CancellationToken cancellationToken = default);
 
+    public Task RegisterMenuSlashCommand(string name, string description, string response,
+        IEnumerable<(string label, string url)> menuButtons);
+
     public Task RegisterSlashCommand(string name, string description, string response,
         Func<ulong, Task> execution);
 

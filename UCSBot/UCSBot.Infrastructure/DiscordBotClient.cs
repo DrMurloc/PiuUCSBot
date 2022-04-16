@@ -133,9 +133,22 @@ public sealed class DiscordBotClient : IBotClient
         });
     }
 
+    public async Task RegisterMenuSlashCommand(string name, string description, string response,
+        IEnumerable<(string label, string url)> menuButtons)
+    {
+        await RegisterSlashCommand(name, description, response, c => { }, _ => Task.CompletedTask,
+            builder =>
+            {
+                foreach (var button in menuButtons)
+                    builder.WithButton(button.label,
+                        style: ButtonStyle.Link, url: button.url);
+            });
+    }
+
     private async Task RegisterSlashCommand(string name, string description, string response,
         Action<SlashCommandBuilder> builderOptions,
-        Func<SocketSlashCommand, Task> execution)
+        Func<SocketSlashCommand, Task> execution,
+        Action<ComponentBuilder>? componentOptions = null)
     {
         if (_client == null) throw new Exception("Discord client was not started");
         var builder = new SlashCommandBuilder()
@@ -151,7 +164,14 @@ public sealed class DiscordBotClient : IBotClient
                 if (command.CommandName == name)
                     try
                     {
-                        await command.RespondAsync(response);
+                        ComponentBuilder? componentBuilder = null;
+                        if (componentOptions != null)
+                        {
+                            componentBuilder = new ComponentBuilder();
+                            componentOptions(componentBuilder);
+                        }
+
+                        await command.RespondAsync(response, components: componentBuilder?.Build());
                         await execution(command);
                     }
                     catch (Exception e)

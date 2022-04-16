@@ -57,9 +57,22 @@ public sealed class BotHostedService : IHostedService
                     _logger.LogError($"There was an error while adding a reaction: {e.Message} {e.StackTrace}", e);
                 }
             });
-            await _botClient.RegisterSlashCommand("help", "Bot Quick Start help and Documentation", @"
-*Testing bold*
-Testing Not Bold", channelId => Task.CompletedTask);
+            await _botClient.RegisterMenuSlashCommand("help", "Bot Quick Start help and Documentation", @"
+**Introduction**
+This bot provides a feed of UCS charts as they get uploaded to the official Andamiro UCS site.
+
+**Get Started**
+Use the `/start-ucs-feed` in the channel(s) you want to receive the UCS chart feed in
+Use `/stop-ucs-feed` to stop the UCS chart feed in that channel
+
+**Exporting Chart List**
+You can use `/build-ucs-spreadsheet` to have the bot DM you a CSV spreadsheet of charts you reacted to",
+                new[]
+                {
+                    ("Andamiro UCS Site", "https://www.piugame.com/piu.ucs/ucs.intro/ucs.intro.php"),
+                    ("Bot Source Code", "https://github.com/DrMurloc/PumpItUpUCSBot"),
+                    ("Importer Source Code", "https://github.com/DrMurloc/PumpItUpUCSImporter")
+                });
             await _botClient.RegisterSlashCommand("build-ucs-spreadsheet",
                 "DMs you a CSV spreadsheet of UCS charts you have reacted to", "Sending UCS Spreadsheet...",
                 async (channelId, userId, options) =>
