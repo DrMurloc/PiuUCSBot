@@ -19,10 +19,11 @@ public interface IBotClient : IDisposable
     public Task SendMessages(IEnumerable<string> messages, IEnumerable<ulong> channelIds,
         CancellationToken cancellationToken = default);
 
-    public Task RegisterSlashCommand(string name, string description, Func<ulong, Task<string>> execution);
+    public Task RegisterSlashCommand(string name, string description, string response,
+        Func<ulong, Task> execution);
 
-    public Task RegisterSlashCommand(string name, string description,
-        Func<ulong, ulong, IDictionary<string, string>, Task<string>> execution,
+    public Task RegisterSlashCommand(string name, string description, string response,
+        Func<ulong, ulong, IDictionary<string, string>, Task> execution,
         IEnumerable<(string name, string description)> options);
 
     public void RegisterReactAdded(Func<string, ulong, ulong, Task> execution);
