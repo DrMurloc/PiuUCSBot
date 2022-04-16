@@ -15,8 +15,8 @@ public sealed class CategorizeMessageHandler : IRequestHandler<CategorizeMessage
 
     public async Task<Unit> Handle(CategorizeMessageCommand request, CancellationToken cancellationToken)
     {
-        if (await _repository.GetSentMessage(request.MessageId) == null) return Unit.Value;
-        await _repository.CategorizeMessage(request.UserId, request.MessageId, request.Category);
+        if (await _repository.GetSentMessage(request.MessageId, cancellationToken) == null) return Unit.Value;
+        await _repository.CategorizeMessage(request.UserId, request.MessageId, request.Category, cancellationToken);
         return Unit.Value;
     }
 }
