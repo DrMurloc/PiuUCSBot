@@ -75,6 +75,30 @@ public sealed class SentMessageRepository : ISentMessageRepository
         await _database.SaveChangesAsync(cancellationToken);
     }
 
+    public async Task<IEnumerable<SentChartMessage>> GetSentMessagesByCategory(ulong discordUserId, string category,
+        CancellationToken cancellationToken = default)
+    {
+        var messageIds = await _database.UserMessageCategory
+            .Where(umc => umc.UserId == discordUserId && umc.Category == category).Select(umc => umc.MessageId)
+            .ToArrayAsync(cancellationToken);
+        if (!messageIds.Any()) return Array.Empty<SentChartMessage>();
+
+        var messageCharts = await _database.ChartMessage.Where(cm => messageIds.Contains(cm.DiscordId))
+            .ToDictionaryAsync(
+                cm => cm.DiscordId, cm => cm.ChartId, cancellationToken);
+
+        if (!messageCharts.Any()) return Array.Empty<SentChartMessage>();
+
+        var chartIds = messageCharts.Values.ToArray();
+
+        var charts = await _database.Chart.Where(c => chartIds.Contains(c.ChartId))
+            .ToDictionaryAsync(c => c.ChartId, cancellationToken);
+
+        return messageCharts.Select(mc => new SentChartMessage(mc.Key, mc.Value, charts[mc.Value].SongName,
+            charts[mc.Value].ChartType, charts[mc.Value].Level, charts[mc.Value].ArtistName, charts[mc.Value].Link,
+            charts[mc.Value].CreationDate));
+    }
+
     private async Task CreateChartsIfNotExists(IEnumerable<SentChartMessage> messages,
         CancellationToken cancellationToken)
     {

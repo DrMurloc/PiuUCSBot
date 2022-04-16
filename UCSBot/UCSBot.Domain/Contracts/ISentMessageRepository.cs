@@ -12,4 +12,7 @@ public interface ISentMessageRepository
 
     Task UnCategorizeMessage(ulong discordUserId, ulong discordMessageId, string category,
         CancellationToken cancellationToken = default);
+
+    Task<IEnumerable<SentChartMessage>> GetSentMessagesByCategory(ulong discordUserId, string category,
+        CancellationToken cancellationToken = default);
 }

@@ -58,6 +58,28 @@ public sealed class BotHostedService : IHostedService
                 }
             });
 
+            await _botClient.RegisterSlashCommand("build-ucs-spreadsheet",
+                "DMs you a CSV spreadsheet of UCS charts you have reacted to", async (channelId, userId, options) =>
+                {
+                    try
+                    {
+                        using var scope = _serviceCollection.CreateScope();
+
+                        var token = new CancellationToken();
+                        await scope.ServiceProvider.GetRequiredService<IMediator>()
+                            .Send(new SendUcsSpreadsheetByCategoryCommand(userId, options["emote"]),
+                                token);
+                        return "UCS spreadsheet sent to you via DM";
+                    }
+                    catch (Exception e)
+                    {
+                        _logger.LogError($"There was an error while adding a reaction: {e.Message} {e.StackTrace}", e);
+                        return "There was an error when building a UCS spreadsheet";
+                    }
+                }, new[]
+                {
+                    ("emote", "The emote react to filter by")
+                });
             await _botClient.RegisterSlashCommand("start-ucs-feed", "Registers the current channel for UCS feeds",
                 async channelId =>
                 {

@@ -50,6 +50,13 @@ public sealed class DiscordBotClient : IBotClient
         await _client.DisposeAsync();
     }
 
+    public async Task SendMessage(ulong userId, string message, CancellationToken cancellationToken = default)
+    {
+        var user = await GetUser(userId);
+
+        await user.SendMessageAsync(message);
+    }
+
     public async Task<IEnumerable<SentChartMessage>> SendMessages(IEnumerable<ChartMessage> messages,
         IEnumerable<ulong> channelIds, CancellationToken cancellationToken = default)
     {
@@ -67,10 +74,72 @@ public sealed class DiscordBotClient : IBotClient
 
     public async Task RegisterSlashCommand(string name, string description, Func<ulong, Task<string>> execution)
     {
+        await RegisterSlashCommand(name, description, o => { }, async command => await execution(command.Channel.Id));
+    }
+
+    public void WhenReady(Func<Task> execution)
+    {
+        if (_client == null) throw new Exception("Client was not started");
+        _client.Ready += execution;
+    }
+
+    public void RegisterReactRemoved(Func<string, ulong, ulong, Task> execution)
+    {
+        if (_client == null) throw new Exception("Bot was not initialized");
+        _client.ReactionRemoved += async (message, channel, reaction) =>
+        {
+            await execution(reaction.Emote.ToString() ?? string.Empty, reaction.UserId, reaction.MessageId);
+        };
+    }
+
+    public void RegisterReactAdded(Func<string, ulong, ulong, Task> execution)
+    {
+        if (_client == null) throw new Exception("Bot was not initialized");
+        _client.ReactionAdded += async (message, channel, reaction) =>
+        {
+            await execution(reaction.Emote.ToString() ?? string.Empty, reaction.UserId, reaction.MessageId);
+        };
+    }
+
+    public async Task SendFile(ulong userId, Stream fileStream, string fileName, string? message = null,
+        CancellationToken cancellationToken = default)
+    {
+        var user = await GetUser(userId);
+
+        await user.SendFileAsync(fileStream, fileName, message);
+    }
+
+    public async Task RegisterSlashCommand(string name, string description,
+        Func<ulong, ulong, IDictionary<string, string>, Task<string>> execution,
+        IEnumerable<(string name, string description)> options)
+    {
+        await RegisterSlashCommand(name, description, builder =>
+        {
+            foreach (var option in options)
+            {
+                var optionBuilder = new SlashCommandOptionBuilder()
+                    .WithName(option.name)
+                    .WithDescription(option.description)
+                    .WithType(ApplicationCommandOptionType.String)
+                    .WithRequired(true);
+                builder.AddOption(optionBuilder);
+            }
+        }, async command =>
+        {
+            return await execution(command.Channel.Id, command.User.Id,
+                command.Data.Options.ToDictionary(o => o.Name, o => o.Value.ToString() ?? string.Empty));
+        });
+    }
+
+    private async Task RegisterSlashCommand(string name, string description, Action<SlashCommandBuilder> builderOptions,
+        Func<SocketSlashCommand, Task<string>> execution)
+    {
         if (_client == null) throw new Exception("Discord client was not started");
         var builder = new SlashCommandBuilder()
             .WithName(name)
             .WithDescription(description);
+        builderOptions(builder);
+
         try
         {
             await _client.CreateGlobalApplicationCommandAsync(builder.Build());
@@ -79,7 +148,7 @@ public sealed class DiscordBotClient : IBotClient
                 if (command.CommandName == name)
                     try
                     {
-                        var response = await execution(command.Channel.Id);
+                        var response = await execution(command);
                         await command.RespondAsync(response);
                     }
                     catch (Exception e)
@@ -96,28 +165,14 @@ public sealed class DiscordBotClient : IBotClient
         }
     }
 
-    public void WhenReady(Func<Task> execution)
+    private async Task<IUser> GetUser(ulong userId)
     {
-        if (_client == null) throw new Exception("Client was not started");
-        _client.Ready += execution;
-    }
+        if (_client == null) throw new Exception("Client was never started");
 
-    public void RegisterReactRemoved(Func<string, ulong, ulong, Task> execution)
-    {
-        if (_client == null) throw new Exception("Bot was not initialized");
-        _client.ReactionRemoved += async (message, channel, reaction) =>
-        {
-            await execution(reaction.Emote.Name, reaction.UserId, reaction.MessageId);
-        };
-    }
+        var user = await _client.GetUserAsync(userId);
+        if (user == null) throw new Exception($"User {userId} was not found when sending a message");
 
-    public void RegisterReactAdded(Func<string, ulong, ulong, Task> execution)
-    {
-        if (_client == null) throw new Exception("Bot was not initialized");
-        _client.ReactionAdded += async (message, channel, reaction) =>
-        {
-            await execution(reaction.Emote.Name, reaction.UserId, reaction.MessageId);
-        };
+        return user;
     }
 
     private async Task SendMessages<T>(IEnumerable<T> messageEntities, IEnumerable<ulong> channelIds,
@@ -125,7 +180,7 @@ public sealed class DiscordBotClient : IBotClient
         Action<T, IUserMessage>? process = default)
     {
         var messageArray = messageEntities.ToArray();
-        var result = new List<SentChartMessage>();
+
         if (_client == null) throw new Exception("Client was never started");
         foreach (var channelId in channelIds)
         {
