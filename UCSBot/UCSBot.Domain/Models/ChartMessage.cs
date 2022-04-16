@@ -8,7 +8,7 @@ public sealed record ChartMessage(Chart Chart)
     public SentChartMessage Sent(ulong discordMessageId)
     {
         return new SentChartMessage(discordMessageId, Chart.ChartId, Chart.SongName, Chart.ChartType,
-            Chart.DifficultyLevel, Chart.StepArtistName, Link);
+            Chart.DifficultyLevel, Chart.StepArtistName, Link, Chart.CreationDate);
     }
 
     private string MessageFromChart(Chart chart)

@@ -20,6 +20,7 @@ builder.Services.AddSingleton<IBotClient, DiscordBotClient>()
     .AddHostedService<UcsImportQueueHostedService>()
     .AddMediatR(typeof(RegisterChannelToFeedHandler))
     .AddTransient<IChannelRepository, EfChannelRepository>()
+    .AddTransient<ISentMessageRepository, SentMessageRepository>()
     .Configure<CosmosConfiguration>(o => { o.ChannelContainerName = cosmosConfig.ChannelContainerName; })
     .Configure<DiscordConfiguration>(o => { o.BotToken = discordConfig.BotToken; })
     .Configure<ServiceBusConfiguration>(o =>

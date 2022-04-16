@@ -11,12 +11,14 @@ public sealed class NotifyDiscordOnImportedChartsListener : INotificationHandler
 {
     private readonly IBotClient _botClient;
     private readonly IChannelRepository _channelRepository;
+    private readonly ISentMessageRepository _sentMessageRepository;
 
     public NotifyDiscordOnImportedChartsListener(IChannelRepository channelRepository,
-        IBotClient botClient)
+        IBotClient botClient, ISentMessageRepository sentMessageRepository)
     {
         _channelRepository = channelRepository;
         _botClient = botClient;
+        _sentMessageRepository = sentMessageRepository;
     }
 
     public async Task Handle(ChartsImportedEvent notification, CancellationToken cancellationToken)
@@ -30,6 +32,8 @@ public sealed class NotifyDiscordOnImportedChartsListener : INotificationHandler
 
         var channelIds = channels.Select(c => c.Id).ToImmutableArray();
 
-        await _botClient.SendMessages(messages, channelIds, cancellationToken);
+        var results = await _botClient.SendMessages(messages, channelIds, cancellationToken);
+
+        await _sentMessageRepository.RecordMessages(results, cancellationToken);
     }
 }
