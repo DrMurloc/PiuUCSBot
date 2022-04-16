@@ -26,6 +26,7 @@ builder.Services.AddSingleton<IBotClient, DiscordBotClient>()
         o.ChannelContainerName = cosmosConfig.ChannelContainerName;
         o.ChartContainerName = cosmosConfig.ChartContainerName;
         o.ChartMessageContainerName = cosmosConfig.ChartMessageContainerName;
+        o.UserMessageCategoryContainerName = cosmosConfig.UserMessageCategoryContainerName;
     })
     .Configure<DiscordConfiguration>(o => { o.BotToken = discordConfig.BotToken; })
     .Configure<ServiceBusConfiguration>(o =>

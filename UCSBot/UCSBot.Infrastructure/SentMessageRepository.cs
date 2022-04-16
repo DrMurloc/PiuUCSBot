@@ -32,6 +32,49 @@ public sealed class SentMessageRepository : ISentMessageRepository
         await _database.SaveChangesAsync(cancellationToken);
     }
 
+    public async Task<SentChartMessage?> GetSentMessage(ulong discordMessageId,
+        CancellationToken cancellationToken = default)
+    {
+        var cm = await _database.ChartMessage.FirstOrDefaultAsync(cm => cm.DiscordId == discordMessageId,
+            cancellationToken);
+        if (cm == null) return null;
+
+        var chart = await _database.Chart.SingleAsync(c => c.ChartId == cm.ChartId, cancellationToken);
+        return new SentChartMessage(cm.DiscordId, chart.ChartId, chart.SongName, chart.ChartType, chart.Level,
+            chart.ArtistName, chart.Link, chart.CreationDate);
+    }
+
+    public async Task CategorizeMessage(ulong discordUserId, ulong discordMessageId, string category,
+        CancellationToken cancellationToken = default)
+    {
+        var existingEntity = await _database.UserMessageCategory.FirstOrDefaultAsync(
+            umc => umc.UserId == discordUserId && umc.MessageId == discordMessageId && umc.Category == category,
+            cancellationToken);
+        if (existingEntity != null) return;
+
+        await _database.UserMessageCategory.AddAsync(new UserMessageCategoryEntity
+        {
+            Category = category,
+            MessageId = discordMessageId,
+            UserId = discordUserId
+        }, cancellationToken);
+
+        await _database.SaveChangesAsync(cancellationToken);
+    }
+
+    public async Task UnCategorizeMessage(ulong discordUserId, ulong discordMessageId, string category,
+        CancellationToken cancellationToken = default)
+    {
+        var existingEntity = await _database.UserMessageCategory.Where(
+                umc => umc.UserId == discordUserId && umc.MessageId == discordMessageId && umc.Category == category)
+            .ToArrayAsync(cancellationToken);
+
+        if (!existingEntity.Any()) return;
+
+        _database.UserMessageCategory.RemoveRange(existingEntity);
+        await _database.SaveChangesAsync(cancellationToken);
+    }
+
     private async Task CreateChartsIfNotExists(IEnumerable<SentChartMessage> messages,
         CancellationToken cancellationToken)
     {

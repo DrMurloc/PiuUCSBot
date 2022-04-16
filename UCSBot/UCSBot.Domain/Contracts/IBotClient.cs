@@ -15,5 +15,7 @@ public interface IBotClient : IDisposable
         CancellationToken cancellationToken = default);
 
     public Task RegisterSlashCommand(string name, string description, Func<ulong, Task<string>> execution);
+    public void RegisterReactAdded(Func<string, ulong, ulong, Task> execution);
+    public void RegisterReactRemoved(Func<string, ulong, ulong, Task> execution);
     public void WhenReady(Func<Task> execution);
 }

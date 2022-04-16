@@ -102,6 +102,24 @@ public sealed class DiscordBotClient : IBotClient
         _client.Ready += execution;
     }
 
+    public void RegisterReactRemoved(Func<string, ulong, ulong, Task> execution)
+    {
+        if (_client == null) throw new Exception("Bot was not initialized");
+        _client.ReactionRemoved += async (message, channel, reaction) =>
+        {
+            await execution(reaction.Emote.Name, reaction.UserId, reaction.MessageId);
+        };
+    }
+
+    public void RegisterReactAdded(Func<string, ulong, ulong, Task> execution)
+    {
+        if (_client == null) throw new Exception("Bot was not initialized");
+        _client.ReactionAdded += async (message, channel, reaction) =>
+        {
+            await execution(reaction.Emote.Name, reaction.UserId, reaction.MessageId);
+        };
+    }
+
     private async Task SendMessages<T>(IEnumerable<T> messageEntities, IEnumerable<ulong> channelIds,
         Func<T, string> messageRetrieval,
         Action<T, IUserMessage>? process = default)

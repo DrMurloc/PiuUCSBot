@@ -8,4 +8,5 @@ public sealed class CosmosConfiguration
     public string ChannelContainerName { get; set; }
     public string ChartContainerName { get; set; }
     public string ChartMessageContainerName { get; set; }
+    public string UserMessageCategoryContainerName { get; set; }
 }

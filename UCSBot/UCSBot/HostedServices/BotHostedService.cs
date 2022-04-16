@@ -27,6 +27,37 @@ public sealed class BotHostedService : IHostedService
         await _botClient.Start(cancellationToken);
         _botClient.WhenReady(async () =>
         {
+            _botClient.RegisterReactRemoved(async (emote, userId, messageId) =>
+            {
+                try
+                {
+                    using var scope = _serviceCollection.CreateScope();
+
+                    var token = new CancellationToken();
+                    await scope.ServiceProvider.GetRequiredService<IMediator>()
+                        .Send(new UnCategorizeMessageCommand(messageId, userId, emote), token);
+                }
+                catch (Exception e)
+                {
+                    _logger.LogError($"There was an error while removing a reaction: {e.Message} {e.StackTrace}", e);
+                }
+            });
+            _botClient.RegisterReactAdded(async (emote, userId, messageId) =>
+            {
+                try
+                {
+                    using var scope = _serviceCollection.CreateScope();
+
+                    var token = new CancellationToken();
+                    await scope.ServiceProvider.GetRequiredService<IMediator>()
+                        .Send(new CategorizeMessageCommand(messageId, userId, emote), token);
+                }
+                catch (Exception e)
+                {
+                    _logger.LogError($"There was an error while adding a reaction: {e.Message} {e.StackTrace}", e);
+                }
+            });
+
             await _botClient.RegisterSlashCommand("start-ucs-feed", "Registers the current channel for UCS feeds",
                 async channelId =>
                 {
