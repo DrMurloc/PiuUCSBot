@@ -41,7 +41,7 @@ public sealed class SentMessageRepository : ISentMessageRepository
 
         var chart = await _database.Chart.SingleAsync(c => c.ChartId == cm.ChartId, cancellationToken);
         return new SentChartMessage(cm.DiscordId, chart.ChartId, chart.SongName, chart.ChartType, chart.Level,
-            chart.ArtistName, chart.Link, chart.CreationDate);
+            chart.ArtistName, chart.Link, DateOnly.FromDateTime(chart.CreationDate));
     }
 
     public async Task CategorizeMessage(ulong discordUserId, ulong discordMessageId, string category,
@@ -96,7 +96,7 @@ public sealed class SentMessageRepository : ISentMessageRepository
 
         return messageCharts.Select(mc => new SentChartMessage(mc.Key, mc.Value, charts[mc.Value].SongName,
             charts[mc.Value].ChartType, charts[mc.Value].Level, charts[mc.Value].ArtistName, charts[mc.Value].Link,
-            charts[mc.Value].CreationDate));
+            DateOnly.FromDateTime(charts[mc.Value].CreationDate)));
     }
 
     private async Task CreateChartsIfNotExists(IEnumerable<SentChartMessage> messages,
@@ -116,7 +116,7 @@ public sealed class SentMessageRepository : ISentMessageRepository
                 ArtistName = chart.Artist,
                 ChartId = chart.ChartId,
                 ChartType = chart.ChartType,
-                CreationDate = chart.CreationDate,
+                CreationDate = chart.CreationDate.ToDateTime(TimeOnly.MinValue),
                 Level = chart.Level,
                 Link = chart.Link,
                 SongName = chart.SongName

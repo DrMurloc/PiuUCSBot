@@ -16,5 +16,5 @@ public sealed class ChartEntity
 
     [Required] public string Link { get; set; }
 
-    [Required] public DateOnly CreationDate { get; set; }
+    [Required] public DateTime CreationDate { get; set; }
 }
