@@ -1,9 +1,15 @@
-﻿namespace UCSBot.Domain.Contracts;
+﻿using UCSBot.Domain.Models;
+
+namespace UCSBot.Domain.Contracts;
 
 public interface IBotClient : IDisposable
 {
     public Task Start(CancellationToken cancellationToken = default);
     public Task Stop(CancellationToken cancellationToken = default);
+
+    public Task<IEnumerable<SentChartMessage>> SendMessages(IEnumerable<ChartMessage> messages,
+        IEnumerable<ulong> channelIds,
+        CancellationToken cancellationToken = default);
 
     public Task SendMessages(IEnumerable<string> messages, IEnumerable<ulong> channelIds,
         CancellationToken cancellationToken = default);

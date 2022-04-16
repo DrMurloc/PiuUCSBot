@@ -3,6 +3,7 @@ using Discord.WebSocket;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using UCSBot.Domain.Contracts;
+using UCSBot.Domain.Models;
 using UCSBot.Infrastructure.Configuration;
 
 namespace UCSBot.Infrastructure;
@@ -49,28 +50,19 @@ public sealed class DiscordBotClient : IBotClient
         await _client.DisposeAsync();
     }
 
+    public async Task<IEnumerable<SentChartMessage>> SendMessages(IEnumerable<ChartMessage> messages,
+        IEnumerable<ulong> channelIds, CancellationToken cancellationToken = default)
+    {
+        var result = new List<SentChartMessage>();
+        await SendMessages(messages, channelIds, m => m.Message,
+            (chart, response) => { result.Add(chart.Sent(response.Id)); });
+        return result;
+    }
+
     public async Task SendMessages(IEnumerable<string> messages, IEnumerable<ulong> channelIds,
         CancellationToken cancellationToken = default)
     {
-        if (_client == null) throw new Exception("Client was never started");
-        foreach (var channelId in channelIds)
-        {
-            if (await _client.GetChannelAsync(channelId) is not IMessageChannel channel)
-            {
-                _logger.LogWarning($"Channel {channelId} was not found");
-                continue;
-            }
-
-            foreach (var message in messages)
-                try
-                {
-                    await channel.SendMessageAsync(message);
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogWarning($"Could not send message to channel {channelId}. Message :{message}", ex);
-                }
-        }
+        await SendMessages(messages, channelIds, m => m);
     }
 
     public async Task RegisterSlashCommand(string name, string description, Func<ulong, Task<string>> execution)
@@ -108,5 +100,33 @@ public sealed class DiscordBotClient : IBotClient
     {
         if (_client == null) throw new Exception("Client was not started");
         _client.Ready += execution;
+    }
+
+    private async Task SendMessages<T>(IEnumerable<T> messageEntities, IEnumerable<ulong> channelIds,
+        Func<T, string> messageRetrieval,
+        Action<T, IUserMessage>? process = default)
+    {
+        var messageArray = messageEntities.ToArray();
+        var result = new List<SentChartMessage>();
+        if (_client == null) throw new Exception("Client was never started");
+        foreach (var channelId in channelIds)
+        {
+            if (await _client.GetChannelAsync(channelId) is not IMessageChannel channel)
+            {
+                _logger.LogWarning($"Channel {channelId} was not found");
+                continue;
+            }
+
+            foreach (var message in messageArray)
+                try
+                {
+                    var userMessage = await channel.SendMessageAsync(messageRetrieval(message));
+                    if (process != null) process(message, userMessage);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning($"Could not send message to channel {channelId}. Message :{message}", ex);
+                }
+        }
     }
 }
