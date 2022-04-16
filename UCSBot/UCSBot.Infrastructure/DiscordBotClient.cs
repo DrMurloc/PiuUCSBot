@@ -72,11 +72,6 @@ public sealed class DiscordBotClient : IBotClient
         await SendMessages(messages, channelIds, m => m);
     }
 
-    public async Task RegisterSlashCommand(string name, string description, Func<ulong, Task<string>> execution)
-    {
-        await RegisterSlashCommand(name, description, o => { }, async command => await execution(command.Channel.Id));
-    }
-
     public void WhenReady(Func<Task> execution)
     {
         if (_client == null) throw new Exception("Client was not started");
@@ -109,11 +104,18 @@ public sealed class DiscordBotClient : IBotClient
         await user.SendFileAsync(fileStream, fileName, message);
     }
 
-    public async Task RegisterSlashCommand(string name, string description,
-        Func<ulong, ulong, IDictionary<string, string>, Task<string>> execution,
+    public async Task RegisterSlashCommand(string name, string description, string response,
+        Func<ulong, Task> execution)
+    {
+        await RegisterSlashCommand(name, description, response, o => { },
+            async command => await execution(command.Channel.Id));
+    }
+
+    public async Task RegisterSlashCommand(string name, string description, string response,
+        Func<ulong, ulong, IDictionary<string, string>, Task> execution,
         IEnumerable<(string name, string description)> options)
     {
-        await RegisterSlashCommand(name, description, builder =>
+        await RegisterSlashCommand(name, description, response, builder =>
         {
             foreach (var option in options)
             {
@@ -126,13 +128,27 @@ public sealed class DiscordBotClient : IBotClient
             }
         }, async command =>
         {
-            return await execution(command.Channel.Id, command.User.Id,
+            await execution(command.Channel.Id, command.User.Id,
                 command.Data.Options.ToDictionary(o => o.Name, o => o.Value.ToString() ?? string.Empty));
         });
     }
 
-    private async Task RegisterSlashCommand(string name, string description, Action<SlashCommandBuilder> builderOptions,
-        Func<SocketSlashCommand, Task<string>> execution)
+    public async Task RegisterMenuSlashCommand(string name, string description, string response,
+        IEnumerable<(string label, string url)> menuButtons)
+    {
+        await RegisterSlashCommand(name, description, response, c => { }, _ => Task.CompletedTask,
+            builder =>
+            {
+                foreach (var button in menuButtons)
+                    builder.WithButton(button.label,
+                        style: ButtonStyle.Link, url: button.url);
+            });
+    }
+
+    private async Task RegisterSlashCommand(string name, string description, string response,
+        Action<SlashCommandBuilder> builderOptions,
+        Func<SocketSlashCommand, Task> execution,
+        Action<ComponentBuilder>? componentOptions = null)
     {
         if (_client == null) throw new Exception("Discord client was not started");
         var builder = new SlashCommandBuilder()
@@ -148,8 +164,15 @@ public sealed class DiscordBotClient : IBotClient
                 if (command.CommandName == name)
                     try
                     {
-                        var response = await execution(command);
-                        await command.RespondAsync(response);
+                        ComponentBuilder? componentBuilder = null;
+                        if (componentOptions != null)
+                        {
+                            componentBuilder = new ComponentBuilder();
+                            componentOptions(componentBuilder);
+                        }
+
+                        await command.RespondAsync(response, components: componentBuilder?.Build());
+                        await execution(command);
                     }
                     catch (Exception e)
                     {
