@@ -24,6 +24,7 @@ public sealed class SentMessageRepository : ISentMessageRepository
         foreach (var message in messageArray)
             await _database.ChartMessage.AddAsync(new ChartMessageEntity
             {
+                Id = message.DiscordId.ToString(),
                 ChartId = message.ChartId,
                 DiscordId = message.DiscordId
             }, cancellationToken);

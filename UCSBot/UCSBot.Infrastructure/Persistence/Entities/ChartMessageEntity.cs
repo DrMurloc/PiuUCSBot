@@ -4,7 +4,7 @@ namespace UCSBot.Infrastructure.Persistence.Entities;
 
 public sealed class ChartMessageEntity
 {
-    public string Id => DiscordId.ToString();
+    public string Id { get; set; }
 
     [Required] [Key] public ulong DiscordId { get; set; }
 

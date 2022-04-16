@@ -21,7 +21,12 @@ builder.Services.AddSingleton<IBotClient, DiscordBotClient>()
     .AddMediatR(typeof(RegisterChannelToFeedHandler))
     .AddTransient<IChannelRepository, EfChannelRepository>()
     .AddTransient<ISentMessageRepository, SentMessageRepository>()
-    .Configure<CosmosConfiguration>(o => { o.ChannelContainerName = cosmosConfig.ChannelContainerName; })
+    .Configure<CosmosConfiguration>(o =>
+    {
+        o.ChannelContainerName = cosmosConfig.ChannelContainerName;
+        o.ChartContainerName = cosmosConfig.ChartContainerName;
+        o.ChartMessageContainerName = cosmosConfig.ChartMessageContainerName;
+    })
     .Configure<DiscordConfiguration>(o => { o.BotToken = discordConfig.BotToken; })
     .Configure<ServiceBusConfiguration>(o =>
     {
