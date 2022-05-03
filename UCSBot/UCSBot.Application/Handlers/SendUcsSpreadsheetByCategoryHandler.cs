@@ -43,7 +43,9 @@ public sealed class SendUcsSpreadsheetByCategoryHandler : IRequestHandler<SendUc
             m.Level,
             m.Artist,
             m.CreationDate,
-            m.Link
+            ChartLink = $"https://piugame.com/bbs/board.php?bo_table=ucs&wr_id={m.ChartId}",
+            RegistrationLink =
+                $"https://www.piugame.com/piu.ucs/ucs.share/ucs.share.ajax.php?ucs_id={m.ChartId}&work_type=AddtoUCSSLOT"
         }), cancellationToken);
 
         await writer.FlushAsync();
